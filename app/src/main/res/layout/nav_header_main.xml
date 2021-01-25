@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/nav_header_height"
+    android:background="@color/colorPrimary"
+    android:gravity="bottom"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+    <ImageView
+        android:id="@+id/userimage_navheader"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="@string/nav_header_desc"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/profiledefault" />
+
+    <TextView
+        android:id="@+id/username_navheader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:text="@string/nav_header_title"
+        app:layout_constraintStart_toEndOf="@+id/userimage_navheader"
+        app:layout_constraintTop_toTopOf="@+id/userimage_navheader" />
+
+    <TextView
+        android:id="@+id/useremail_navheader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/nav_header_subtitle"
+        app:layout_constraintBottom_toBottomOf="@+id/userimage_navheader"
+        app:layout_constraintStart_toStartOf="@+id/username_navheader"
+        app:layout_constraintTop_toBottomOf="@+id/username_navheader" />
+
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:gravity="center_horizontal"
+        android:onClick="loginBtnNavClicked"
+        android:text="@string/login"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userimage_navheader" />
+
+    <ImageView
+        android:id="@+id/addchannelBtn"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginBottom="16dp"
+        android:padding="5dp"
+        android:onClick="addChannelBtnClicked"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/addchannelbutton" />
+</androidx.constraintlayout.widget.ConstraintLayout>
