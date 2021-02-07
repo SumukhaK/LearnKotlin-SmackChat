@@ -1,5 +1,6 @@
-package com.johnnybkotlin.smack.ui
+package com.johnnybkotlin.smack.views
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -12,5 +13,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     fun loginBtnClicked(view: View) {}
-    fun createuserbtnclick(view: View) {}
+    fun createuserbtnclick(view: View) {
+
+        val createUserIntent = Intent(this,CreateUserActivity::class.java)
+        startActivity(createUserIntent)
+    }
 }
