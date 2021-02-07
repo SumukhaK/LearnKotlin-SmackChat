@@ -1,7 +1,12 @@
 package com.johnnybkotlin.smack.services
 
 import android.content.Context
+import android.util.Log
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.johnnybkotlin.smack.utility.URL_REGISTER
+import org.json.JSONObject
 
 object AuthService {
 
@@ -9,6 +14,34 @@ object AuthService {
 
         val url = URL_REGISTER
 
-        
+        val jsonBody:JSONObject = JSONObject()
+
+        jsonBody.put("email",email)
+        jsonBody.put("password",password)
+
+        val requestBody = jsonBody.toString()
+
+        val registerRequest = object  :StringRequest(Method.POST, URL_REGISTER,
+            Response.Listener { response ->
+
+                Log.v("Registerresponse",response.toString())
+                complete(true)
+            },
+            Response.ErrorListener { error ->
+
+                Log.v("RegisterError"," Register error "+error.message)
+                complete(false)
+            }){
+
+            override fun getBodyContentType(): String {
+                return "application/json; charset=utf-8"
+            }
+
+            override fun getBody(): ByteArray {
+                return requestBody.toByteArray()
+            }
+        }
+
+        Volley.newRequestQueue(context).add(registerRequest)
     }
 }

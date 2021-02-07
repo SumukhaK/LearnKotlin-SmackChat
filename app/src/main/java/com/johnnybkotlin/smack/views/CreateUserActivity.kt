@@ -3,8 +3,11 @@ package com.johnnybkotlin.smack.views
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import com.johnnybkotlin.smack.R
+import com.johnnybkotlin.smack.services.AuthService
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
@@ -51,6 +54,18 @@ class CreateUserActivity : AppCompatActivity() {
         avatarColor = "[$savedR,$savedG,$savedB,1]"
     }
 
-    fun createUserOnClick(view: View) {}
+    fun createUserOnClick(view: View) {
 
+        AuthService.registerUser(this,createEmailtext.text.toString(),createPasswordtext.text.toString()) { complete ->
+
+            if (complete) {
+                Log.v("Registerresponse"," "+complete)
+                Toast.makeText(
+                    this,
+                    " user ${createEmailtext.text} registration Successful..",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+        }}
 }
