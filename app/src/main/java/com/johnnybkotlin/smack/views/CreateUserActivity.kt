@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import com.johnnybkotlin.smack.R
 import com.johnnybkotlin.smack.services.AuthService
+import com.johnnybkotlin.smack.services.UserDataService
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
@@ -16,7 +17,7 @@ class CreateUserActivity : AppCompatActivity() {
 
     var userAvatar = "profileDefault"
     var avatarColor = "[0.5,0.5,0.5,1]"
-
+    val TAG ="CREATEUSER_TAG"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_user)
@@ -57,12 +58,39 @@ class CreateUserActivity : AppCompatActivity() {
     fun createUserOnClick(view: View) {
 
         val email = createEmailtext.text.toString()
+        val userName = createUserNameText.text.toString()
         val password = createPasswordtext.text.toString()
         AuthService.registerUser(this,createEmailtext.text.toString(),createPasswordtext.text.toString()) { complete ->
 
             if (complete) {
-                Log.v("RegisterActivity"," "+complete)
+
                 AuthService.loginUser(this,email,password){
+                    loginComplete ->
+
+                    if(loginComplete){
+                        Log.v(TAG,"loginComplete : "+loginComplete)
+                        Log.v(TAG," "+complete)
+                        AuthService.createUser(this,userName,email,userAvatar,avatarColor){
+
+                            addUserComplete ->
+
+                            if(addUserComplete){
+                                Log.v(TAG,"AddUserComplete : "+addUserComplete)
+                                println("UserName : "+UserDataService.avatarName+" UserEmail : "+UserDataService.email)
+                                finish()
+                            }else{
+                                Log.v(TAG,"AddUserComplete : "+addUserComplete)
+                            }
+                        }
+                    }else{
+                        Log.v(TAG,"loginComplete : "+loginComplete)
+                    }
+
+                }
+
+
+
+                /*AuthService.loginUser(this,email,password){
                     loginComplete ->
 
                     if(loginComplete){
@@ -71,7 +99,7 @@ class CreateUserActivity : AppCompatActivity() {
                         Log.v("RegisterActivity","loginComplete : "+loginComplete)
                     }
 
-                }
+                }*/
             }
 
         }}
