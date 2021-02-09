@@ -9,10 +9,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Smack">
-        <activity android:name=".views.CreateUserActivity"></activity>
+        <activity android:name=".views.CreateUserActivity"
+            android:label="@string/app_name"></activity>
         <activity
             android:name=".views.MainActivity"
-            android:label="@string/title_activity_home"
+            android:label="@string/app_name"
             android:theme="@style/Theme.Smack.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +23,7 @@
         </activity>
         <activity
             android:name=".views.LoginActivity"
+            android:label="@string/app_name"
             android:theme="@style/Theme.Smack.NoActionBar" />
     </application>
 

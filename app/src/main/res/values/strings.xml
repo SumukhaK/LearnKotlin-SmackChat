@@ -25,4 +25,6 @@
     <string name="generates_an_avatar_for_user">Generates an Avatar for user</string>
     <string name="e_mail">E-mail</string>
     <string name="username">Username</string>
+    <string name="text_logout">Logout</string>
+    <string name="text_add_channel">Add Channels</string>
 </resources>
