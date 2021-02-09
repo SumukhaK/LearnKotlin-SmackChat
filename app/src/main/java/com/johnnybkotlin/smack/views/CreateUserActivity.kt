@@ -1,14 +1,17 @@
 package com.johnnybkotlin.smack.views
 
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.johnnybkotlin.smack.R
 import com.johnnybkotlin.smack.services.AuthService
 import com.johnnybkotlin.smack.services.UserDataService
+import com.johnnybkotlin.smack.utility.BROADCAST_USERDATA_CHANGED
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
@@ -21,6 +24,7 @@ class CreateUserActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_user)
+        createSpinner.visibility = View.INVISIBLE
     }
 
     fun generateUserAvatar(view: View) {
@@ -60,47 +64,65 @@ class CreateUserActivity : AppCompatActivity() {
         val email = createEmailtext.text.toString()
         val userName = createUserNameText.text.toString()
         val password = createPasswordtext.text.toString()
-        AuthService.registerUser(this,createEmailtext.text.toString(),createPasswordtext.text.toString()) { complete ->
 
-            if (complete) {
+        if (userName.isNotEmpty() && password.isNotEmpty() && email.isNotEmpty()){
+            enableSpinner(true)
+            AuthService.registerUser(this, createEmailtext.text.toString(), createPasswordtext.text.toString()) { complete ->
 
-                AuthService.loginUser(this,email,password){
-                    loginComplete ->
+                if (complete) {
 
-                    if(loginComplete){
-                        Log.v(TAG,"loginComplete : "+loginComplete)
-                        Log.v(TAG," "+complete)
-                        AuthService.createUser(this,userName,email,userAvatar,avatarColor){
+                    AuthService.loginUser(this, email, password) { loginComplete ->
 
-                            addUserComplete ->
+                        if (loginComplete) {
+                            Log.v(TAG, "loginComplete : " + loginComplete)
+                            Log.v(TAG, " " + complete)
+                            AuthService.createUser(this, userName, email, userAvatar, avatarColor) {
 
-                            if(addUserComplete){
-                                Log.v(TAG,"AddUserComplete : "+addUserComplete)
-                                println("UserName : "+UserDataService.avatarName+" UserEmail : "+UserDataService.email)
-                                finish()
-                            }else{
-                                Log.v(TAG,"AddUserComplete : "+addUserComplete)
+                                addUserComplete ->
+
+                                if (addUserComplete) {
+                                    Log.v(TAG, "AddUserComplete : " + addUserComplete)
+                                    val userDataChanged = Intent(BROADCAST_USERDATA_CHANGED)
+                                    LocalBroadcastManager.getInstance(this).sendBroadcast(userDataChanged)
+                                    println("UserName : " + UserDataService.avatarName + " UserEmail : " + UserDataService.email)
+                                    finish()
+                                } else {
+                                    errorToast()
+                                    Log.v(TAG, "AddUserComplete : " + addUserComplete)
+                                }
                             }
+                        } else {
+                            errorToast()
+                            Log.v(TAG, "loginComplete : " + loginComplete)
                         }
-                    }else{
-                        Log.v(TAG,"loginComplete : "+loginComplete)
                     }
-
+                } else {
+                    errorToast()
                 }
 
-
-
-                /*AuthService.loginUser(this,email,password){
-                    loginComplete ->
-
-                    if(loginComplete){
-                        Log.v("RegisterActivity","loginComplete : "+loginComplete)
-                    }else{
-                        Log.v("RegisterActivity","loginComplete : "+loginComplete)
-                    }
-
-                }*/
             }
+        }else{
+            Toast.makeText(this,"Make sure email, password and username are not empty !!..",Toast.LENGTH_LONG).show()
+            enableSpinner(false)
+        }
 
-        }}
+    }
+
+    fun enableSpinner(enable:Boolean){
+
+        if(enable){
+            createSpinner.visibility = View.VISIBLE
+        }else{
+            createSpinner.visibility = View.INVISIBLE
+        }
+        createUserBtn.isEnabled = !enable
+        createAvatarImageview.isEnabled = !enable
+        backgroundColorBtn.isEnabled = !enable
+    }
+
+    fun errorToast(){
+
+        Toast.makeText(this,"Something went wrong, Please try again !..",Toast.LENGTH_LONG).show()
+        enableSpinner(false)
+    }
 }
