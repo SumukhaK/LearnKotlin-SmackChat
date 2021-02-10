@@ -67,10 +67,10 @@ class CreateUserActivity : AppCompatActivity() {
 
         if (userName.isNotEmpty() && password.isNotEmpty() && email.isNotEmpty()){
             enableSpinner(true)
-            AuthService.registerUser(this, createEmailtext.text.toString(), createPasswordtext.text.toString()) { complete ->
+            AuthService.registerUser(this, email, password) { complete ->
 
                 if (complete) {
-
+                    Toast.makeText(this,"Registration complete !!..",Toast.LENGTH_LONG).show()
                     AuthService.loginUser(this, email, password) { loginComplete ->
 
                         if (loginComplete) {
