@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -17,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.github.nkzawa.emitter.Emitter
@@ -41,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
     val TAG = "MainActiityLOGS"
+    var selectedChannel: Channel? = null
     lateinit var channelAdapter:ArrayAdapter<Channel>
 
     private fun setAdapter(){
@@ -70,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         Log.v(TAG," App.sharedPreferences.isLoggedIn ${App.sharedPreferences.isLoggedIn}")
         if(App.sharedPreferences.isLoggedIn){
 
-            AuthService.findUserByMail(this){ complete ->
+            AuthService.findUserByMail(){ complete ->
                 if(complete){
                     enableSpinner(false)
                     Log.v(TAG," findUserByMail complete $complete")
@@ -85,6 +88,13 @@ class MainActivity : AppCompatActivity() {
         }else{
             val loginIntent = Intent(this, LoginActivity::class.java)
             startActivity(loginIntent)
+        }
+
+        channel_list.setOnItemClickListener{adapterview,view,i,l ->
+
+            selectedChannel = MessageService.channels[i]
+            drawer_layout.closeDrawer(GravityCompat.START)
+            updateWithChannel()
         }
     }
 
@@ -118,12 +128,16 @@ class MainActivity : AppCompatActivity() {
                 userimage_navheader.setBackgroundColor(UserDataService.returnAvatarColors(UserDataService.avatarColor))
                 login_navheader_button.text = getString(R.string.text_logout)
 
-                MessageService.getChannels(this@MainActivity){
+                MessageService.getChannels(){
                         complete ->
                     if(complete){
                         Log.v(TAG," getChannels complete $complete")
+                        if(MessageService.channels.count()>0){
+                            selectedChannel = MessageService.channels[0]
+                            channelAdapter.notifyDataSetChanged()
+                            updateWithChannel()
+                        }
 
-                        channelAdapter.notifyDataSetChanged()
                     }else{
                         Log.v(TAG," getChannels complete $complete")
 
@@ -133,6 +147,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    fun updateWithChannel(){
+
+        mainChannelName.text = "#${selectedChannel?.name}"
+        //TODO: download the messages from the channel
+    }
 
     fun loginBtnNavClicked(view: View) {
 

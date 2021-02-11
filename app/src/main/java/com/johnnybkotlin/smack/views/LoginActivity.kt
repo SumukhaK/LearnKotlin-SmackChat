@@ -35,10 +35,10 @@ class LoginActivity : AppCompatActivity() {
         if (password.isNotEmpty() && email.isNotEmpty()){
             enableSpinner(true)
             hideKeyboard()
-            AuthService.loginUser(this, email, password){
+            AuthService.loginUser( email, password){
                 complete ->
                 if(complete){
-                    AuthService.findUserByMail(this){ findUsercomplete ->
+                    AuthService.findUserByMail(){ findUsercomplete ->
 
                         if(findUsercomplete){
                             Log.v(TAG, "findUserByMail : " + complete)

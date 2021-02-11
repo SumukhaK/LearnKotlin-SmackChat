@@ -70,16 +70,16 @@ class CreateUserActivity : AppCompatActivity() {
         if (userName.isNotEmpty() && password.isNotEmpty() && email.isNotEmpty()){
             enableSpinner(true)
             hideKeyboard()
-            AuthService.registerUser(this, email, password) { complete ->
+            AuthService.registerUser( email, password) { complete ->
 
                 if (complete) {
                     Toast.makeText(this,"Registration complete !!..",Toast.LENGTH_LONG).show()
-                    AuthService.loginUser(this, email, password) { loginComplete ->
+                    AuthService.loginUser( email, password) { loginComplete ->
 
                         if (loginComplete) {
                             Log.v(TAG, "loginComplete : " + loginComplete)
                             Log.v(TAG, " " + complete)
-                            AuthService.createUser(this, userName, email, userAvatar, avatarColor) {
+                            AuthService.createUser(userName, email, userAvatar, avatarColor) {
 
                                 addUserComplete ->
 
