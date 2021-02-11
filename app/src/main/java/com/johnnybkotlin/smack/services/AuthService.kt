@@ -26,40 +26,6 @@ object AuthService {
     var authToken = ""
     val TAG ="API_TAG"
 
-    /* fun registerUser(context: Context,email:String,password:String,complete : (Boolean) -> Unit){
-
-         val jsonBody = JSONObject()
-
-         jsonBody.put("email",email)
-         jsonBody.put("password",password)
-
-         val requestBody = jsonBody.toString()
-
-         val registerRequest = object  :StringRequest(Method.POST, URL_REGISTER,
-                 Response.Listener { response ->
-
-                     Log.v(TAG,response.toString())
-                     complete(true)
-                 },
-                 Response.ErrorListener { error ->
-
-                     Log.v(TAG," Register error "+error.localizedMessage)
-                     error.printStackTrace()
-                     complete(false)
-                 }){
-
-             override fun getBodyContentType(): String {
-                 return "application/json; charset=utf-8"
-             }
-
-             override fun getBody(): ByteArray {
-                 return requestBody.toByteArray()
-             }
-         }
-
-         Volley.newRequestQueue(context).add(registerRequest)
-     }*/
-
     fun registerUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit){
 
         val jsonBody = JSONObject()

@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -36,6 +37,13 @@ class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
     val TAG = "MainActiityLOGS"
+    lateinit var channelAdapter:ArrayAdapter<Channel>
+
+    private fun setAdapter(){
+        channelAdapter = ArrayAdapter(this,android.R.layout.simple_list_item_1,MessageService.channels)
+        channel_list.adapter = channelAdapter
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -43,9 +51,9 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         val toggle = ActionBarDrawerToggle(
-                this, drawer_layout, toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close
+            this, drawer_layout, toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
@@ -53,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangedReciever, IntentFilter(BROADCAST_USERDATA_CHANGED))
         socket.connect()
         socket.on("channelCreated",onNewChannel)
+        setAdapter()
     }
 
     override fun onResume() {
@@ -81,6 +90,18 @@ class MainActivity : AppCompatActivity() {
                 //Log.v("AvatarcompActivity"," "+UserDataService.returnAvatarColors(UserDataService.avatarColor))
                 userimage_navheader.setBackgroundColor(UserDataService.returnAvatarColors(UserDataService.avatarColor))
                 login_navheader_button.text = getString(R.string.text_logout)
+
+                MessageService.getChannels(this@MainActivity){
+                        complete ->
+                    if(complete){
+                        Log.v(TAG," getChannels complete $complete")
+
+                        channelAdapter.notifyDataSetChanged()
+                    }else{
+                        Log.v(TAG," getChannels complete $complete")
+
+                    }
+                }
             }
         }
     }
@@ -110,27 +131,27 @@ class MainActivity : AppCompatActivity() {
             val dialogueView = layoutInflater.inflate(R.layout.add_channel_dialogue, null)
 
             builder.setView(dialogueView)
-                    .setPositiveButton("Add"){ dialogInterface, i ->
+                .setPositiveButton("Add"){ dialogInterface, i ->
 
-                        val nameTextfield = dialogueView.findViewById<EditText>(R.id.addChannelNameText)
-                        val descTextfield = dialogueView.findViewById<EditText>(R.id.descriptionText)
-                        val channelName = nameTextfield.text.toString()
-                        val channelDesc = descTextfield.text.toString()
-                        Log.v(TAG," newChannelDetails $channelName $channelDesc")
-                        //socket.emit("newChannel",channelName,channelDesc,Ack)
-                        socket.emit("newChannel", channelName,channelDesc, Ack { args ->
-                            val repues = args[0] as JSONObject
-                            Log.v(TAG," repupes "+repues.toString())
-                            Log.v(TAG," args "+args.toString())
-                        })
+                    val nameTextfield = dialogueView.findViewById<EditText>(R.id.addChannelNameText)
+                    val descTextfield = dialogueView.findViewById<EditText>(R.id.descriptionText)
+                    val channelName = nameTextfield.text.toString()
+                    val channelDesc = descTextfield.text.toString()
+                    Log.v(TAG," newChannelDetails $channelName $channelDesc")
+                    //socket.emit("newChannel",channelName,channelDesc,Ack)
+                    socket.emit("newChannel", channelName,channelDesc, Ack { args ->
+                        val repues = args[0] as JSONObject
+                        Log.v(TAG," repupes "+repues.toString())
+                        Log.v(TAG," args "+args.toString())
+                    })
 
-                        hideKeyboard()
-                    }
-                    .setNegativeButton("Cancel"){ dialogInterface, i ->
+                    hideKeyboard()
+                }
+                .setNegativeButton("Cancel"){ dialogInterface, i ->
 
-                        dialogInterface.dismiss()
-                        hideKeyboard()
-                    }.show()
+                    dialogInterface.dismiss()
+                    hideKeyboard()
+                }.show()
 
         }
 
