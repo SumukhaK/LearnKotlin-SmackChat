@@ -3,6 +3,7 @@ package com.johnnybkotlin.smack.services
 import android.graphics.Color
 import android.util.Log
 import androidx.core.view.KeyEventDispatcher
+import com.johnnybkotlin.smack.App
 import java.util.*
 
 object UserDataService {
@@ -58,8 +59,9 @@ object UserDataService {
         var avatarName = ""
         var email = ""
         var name = ""
-        AuthService.authToken = ""
-        AuthService.isLoggedIn = false
-        AuthService.userEmail = ""
+        App.Companion.sharedPreferences.authToken = ""
+        App.Companion.sharedPreferences.isLoggedIn = false
+        App.Companion.sharedPreferences.userEmail = ""
+        MessageService.channels.clear()
     }
 }

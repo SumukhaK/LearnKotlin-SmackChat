@@ -8,6 +8,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.johnnybkotlin.smack.App
 import com.johnnybkotlin.smack.utility.URL_ADDUSER
 import com.johnnybkotlin.smack.utility.URL_GETUSER
 import com.johnnybkotlin.smack.utility.URL_LOGIN
@@ -20,10 +21,10 @@ import kotlin.text.Charsets.UTF_8
 
 object AuthService {
 
-    var isLoggedIn = false
-    var userEmail = ""
-    var userPassword = ""
-    var authToken = ""
+//    var isLoggedIn = false
+//    var userEmail = ""
+//    var userPassword = ""
+//    var authToken = ""
     val TAG ="API_TAG"
 
     fun registerUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit){
@@ -59,7 +60,7 @@ object AuthService {
             }
         }
 
-        Volley.newRequestQueue(context).add(registerRequest)
+        App.sharedPreferences.requestQueue.add(registerRequest)
     }
 
     fun loginUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit){
@@ -75,10 +76,10 @@ object AuthService {
                 Response.Listener { response ->
                     Log.v(TAG, response.toString())
                     try {
-                        userEmail = response.getString("user")
-                        authToken = response.getString("token")
-                        isLoggedIn = true
-                        Log.v(TAG, " email : $userEmail Token : $authToken isLoggedIn : $isLoggedIn")
+                        App.Companion.sharedPreferences.userEmail = response.getString("user")
+                        App.Companion.sharedPreferences.authToken = response.getString("token")
+                        App.Companion.sharedPreferences.isLoggedIn = true
+                        //Log.v(TAG, " email : $userEmail Token : $authToken isLoggedIn : $isLoggedIn")
                         complete(true)
                     } catch (e: JSONException) {
 
@@ -89,9 +90,9 @@ object AuthService {
                 },
                 Response.ErrorListener { error ->
                     error.printStackTrace()
-                    userEmail = ""
-                    authToken = ""
-                    isLoggedIn = false
+                    App.Companion.sharedPreferences.userEmail = ""
+                    App.Companion.sharedPreferences.authToken = ""
+                    App.Companion.sharedPreferences.isLoggedIn= false
                     onErrorResponse(error)
                     Log.v(TAG, error.message.toString())
                     complete(false)
@@ -105,7 +106,7 @@ object AuthService {
                 return requestBody.toByteArray()
             }
         }
-        Volley.newRequestQueue(context).add(loginRequest)
+        App.sharedPreferences.requestQueue.add(loginRequest)
     }
 
     fun createUser(context: Context, name: String, email: String, avatarName: String, avatarColor: String, complete: (Boolean) -> Unit){
@@ -152,17 +153,17 @@ object AuthService {
 
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers.put("Authorization", "Bearer $authToken")
+                headers.put("Authorization", "Bearer ${App.Companion.sharedPreferences.authToken}")
                 return headers
             }
         }
 
-        Volley.newRequestQueue(context).add(addUserRequest)
+        App.sharedPreferences.requestQueue.add(addUserRequest)
     }
 
     fun findUserByMail(context: Context,complete: (Boolean) -> Unit){
 
-        val findUserReq =object :JsonObjectRequest(Method.GET, URL_GETUSER+userEmail,null,
+        val findUserReq =object :JsonObjectRequest(Method.GET, URL_GETUSER+App.Companion.sharedPreferences.userEmail,null,
 
                 Response.Listener { response ->
                     //Log.v(TAG+"URL", URL_GETUSER+userEmail)
@@ -193,12 +194,12 @@ object AuthService {
 
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers.put("Authorization", "Bearer $authToken")
+                headers.put("Authorization", "Bearer ${App.Companion.sharedPreferences.authToken}")
                 return headers
             }
         }
 
-        Volley.newRequestQueue(context).add(findUserReq)
+        App.sharedPreferences.requestQueue.add(findUserReq)
     }
 
     fun onErrorResponse(error: VolleyError) {

@@ -13,13 +13,16 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.github.nkzawa.emitter.Emitter
 import com.github.nkzawa.socketio.client.Ack
 import com.github.nkzawa.socketio.client.IO
+import com.johnnybkotlin.smack.App
 import com.johnnybkotlin.smack.R
 import com.johnnybkotlin.smack.model.Channel
 import com.johnnybkotlin.smack.services.AuthService
@@ -27,6 +30,7 @@ import com.johnnybkotlin.smack.services.MessageService
 import com.johnnybkotlin.smack.services.UserDataService
 import com.johnnybkotlin.smack.utility.BROADCAST_USERDATA_CHANGED
 import com.johnnybkotlin.smack.utility.SOCKET_URL
+import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
@@ -58,14 +62,37 @@ class MainActivity : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         hideKeyboard()
+        enableSpinner(true)
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangedReciever, IntentFilter(BROADCAST_USERDATA_CHANGED))
         socket.connect()
         socket.on("channelCreated",onNewChannel)
         setAdapter()
+        Log.v(TAG," App.sharedPreferences.isLoggedIn ${App.sharedPreferences.isLoggedIn}")
+        if(App.sharedPreferences.isLoggedIn){
+
+            AuthService.findUserByMail(this){ complete ->
+                if(complete){
+                    enableSpinner(false)
+                    Log.v(TAG," findUserByMail complete $complete")
+                    val userDataChanged = Intent(BROADCAST_USERDATA_CHANGED)
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(userDataChanged)
+                }else{
+                    errorToast()
+                    Log.v(TAG," findUserByMail complete $complete")
+                }
+
+            }
+        }else{
+            val loginIntent = Intent(this, LoginActivity::class.java)
+            startActivity(loginIntent)
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        if(App.sharedPreferences.isLoggedIn){
+            enableSpinner(false)
+        }
         /*socket.connect()
         socket.on("channelCreated",onNewChannel)*/
     }
@@ -80,7 +107,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
             //TODO("Not yet implemented")
-            if(AuthService.isLoggedIn){
+            if(App.sharedPreferences.isLoggedIn){
                 username_navheader.text = UserDataService.name
                 useremail_navheader.text = UserDataService.email
                 mainChannelName.text = getString(R.string.text_add_channel)
@@ -109,7 +136,7 @@ class MainActivity : AppCompatActivity() {
 
     fun loginBtnNavClicked(view: View) {
 
-        if(AuthService.isLoggedIn){
+        if(App.sharedPreferences.isLoggedIn){
             UserDataService.logOut()
             username_navheader.text = "LogIn"
             login_navheader_button.text = "LogIn"
@@ -125,7 +152,7 @@ class MainActivity : AppCompatActivity() {
 
     fun addChannelBtnClicked(view: View) {
 
-        if(AuthService.isLoggedIn){
+        if(App.sharedPreferences.isLoggedIn){
 
             val builder = AlertDialog.Builder(this)
             val dialogueView = layoutInflater.inflate(R.layout.add_channel_dialogue, null)
@@ -175,6 +202,29 @@ class MainActivity : AppCompatActivity() {
             Log.v(TAG," newChannel $channelName $channelDesc")
             val newChannel = Channel(channelName,channelDesc,channelID)
             MessageService.channels.add(newChannel)
+            channelAdapter.notifyDataSetChanged()
         }
+    }
+
+    fun enableSpinner(enable:Boolean){
+
+        if(enable){
+            mainProgressbar.visibility = View.VISIBLE
+            hideKeyboard()
+            sendmessagebtn.isEnabled = false
+            drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+        }else{
+            mainProgressbar.visibility = View.INVISIBLE
+            sendmessagebtn.isEnabled = true
+            drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+        }
+
+    }
+
+    fun errorToast(){
+        Toast.makeText(this,"Something went wrong, Please Log in again!..", Toast.LENGTH_LONG).show()
+        enableSpinner(false)
+        val loginIntent = Intent(this, LoginActivity::class.java)
+        startActivity(loginIntent)
     }
 }
