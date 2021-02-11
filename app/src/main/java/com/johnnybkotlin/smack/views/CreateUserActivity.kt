@@ -1,11 +1,13 @@
 package com.johnnybkotlin.smack.views
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.johnnybkotlin.smack.R
@@ -67,6 +69,7 @@ class CreateUserActivity : AppCompatActivity() {
 
         if (userName.isNotEmpty() && password.isNotEmpty() && email.isNotEmpty()){
             enableSpinner(true)
+            hideKeyboard()
             AuthService.registerUser(this, email, password) { complete ->
 
                 if (complete) {
@@ -118,6 +121,12 @@ class CreateUserActivity : AppCompatActivity() {
         createUserBtn.isEnabled = !enable
         createAvatarImageview.isEnabled = !enable
         backgroundColorBtn.isEnabled = !enable
+    }
+
+    fun hideKeyboard(){
+
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
     fun errorToast(){

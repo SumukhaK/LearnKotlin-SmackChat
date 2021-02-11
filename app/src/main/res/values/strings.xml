@@ -27,4 +27,6 @@
     <string name="username">Username</string>
     <string name="text_logout">Logout</string>
     <string name="text_add_channel">Add Channels</string>
+    <string name="channel_desc">channel description</string>
+    <string name="add_channel">Add Channel</string>
 </resources>
