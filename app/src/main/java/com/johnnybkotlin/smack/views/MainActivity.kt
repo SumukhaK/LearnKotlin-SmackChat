@@ -27,6 +27,7 @@ import com.github.nkzawa.socketio.client.IO
 import com.johnnybkotlin.smack.App
 import com.johnnybkotlin.smack.R
 import com.johnnybkotlin.smack.model.Channel
+import com.johnnybkotlin.smack.model.Message
 import com.johnnybkotlin.smack.services.AuthService
 import com.johnnybkotlin.smack.services.MessageService
 import com.johnnybkotlin.smack.services.UserDataService
@@ -69,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangedReciever, IntentFilter(BROADCAST_USERDATA_CHANGED))
         socket.connect()
         socket.on("channelCreated",onNewChannel)
+        socket.on("messageCreated",onNewMessage)
         setAdapter()
         Log.v(TAG," App.sharedPreferences.isLoggedIn ${App.sharedPreferences.isLoggedIn}")
         if(App.sharedPreferences.isLoggedIn){
@@ -205,7 +207,22 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun sendmessageOnclick(view: View) {}
+    fun sendmessageOnclick(view: View) {
+
+        if(App.sharedPreferences.isLoggedIn && messagetextfield.text.isNotEmpty()){
+
+            val userId = UserDataService.id
+            val channelId = selectedChannel!!.id
+            socket.emit("newMessage",messagetextfield.text.toString(),userId,channelId,UserDataService.name,UserDataService.avatarName,UserDataService.avatarColor, Ack { args ->
+                val repues = args[0] as JSONObject
+                Log.v(TAG," newMessage repupes "+repues.toString())
+                Log.v(TAG," newMessage args "+args.toString())
+            })
+            messagetextfield.text.clear()
+            hideKeyboard()
+        }
+
+    }
 
     fun hideKeyboard(){
 
@@ -223,6 +240,23 @@ class MainActivity : AppCompatActivity() {
             val newChannel = Channel(channelName,channelDesc,channelID)
             MessageService.channels.add(newChannel)
             channelAdapter.notifyDataSetChanged()
+        }
+    }
+
+    private val onNewMessage =Emitter.Listener { args ->
+
+        runOnUiThread {
+            val messageBody = args[0] as String
+            val channelId = args[2] as String
+            val userName = args[3] as String
+            val userAvatar = args[4] as String
+            val userAvatarColor = args[5] as String
+            val id = args[6] as String
+            val timeStamp = args[7] as String
+
+            val newMessage = Message(messageBody,userName,channelId,userAvatar,userAvatarColor,id,timeStamp)
+            MessageService.messages.add(newMessage)
+            Log.v(TAG," newMessage ${newMessage.message} ${newMessage.userName} ")
         }
     }
 

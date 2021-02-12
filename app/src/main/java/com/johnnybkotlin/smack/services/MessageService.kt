@@ -9,6 +9,7 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.Volley
 import com.johnnybkotlin.smack.App
 import com.johnnybkotlin.smack.model.Channel
+import com.johnnybkotlin.smack.model.Message
 import com.johnnybkotlin.smack.utility.URL_GET_CHANNELS
 import org.json.JSONException
 import org.json.JSONObject
@@ -17,6 +18,7 @@ import java.io.UnsupportedEncodingException
 object MessageService {
 
     val channels = ArrayList<Channel>()
+    val messages = ArrayList<Message>()
 
     fun getChannels(complete: (Boolean) -> Unit){
 
