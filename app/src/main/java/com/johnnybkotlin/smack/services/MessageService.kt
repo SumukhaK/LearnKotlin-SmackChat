@@ -11,6 +11,7 @@ import com.johnnybkotlin.smack.App
 import com.johnnybkotlin.smack.model.Channel
 import com.johnnybkotlin.smack.model.Message
 import com.johnnybkotlin.smack.utility.URL_GET_CHANNELS
+import com.johnnybkotlin.smack.utility.URL_GET_MESSAGES
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -21,8 +22,6 @@ object MessageService {
     val messages = ArrayList<Message>()
 
     fun getChannels(complete: (Boolean) -> Unit){
-
-        URL_GET_CHANNELS
 
         val getChannelsRequest = object : JsonArrayRequest(Method.GET, URL_GET_CHANNELS,null,
             Response.Listener { response ->
@@ -62,6 +61,65 @@ object MessageService {
             }
         }
         App.sharedPreferences.requestQueue.add(getChannelsRequest)
+    }
+
+    fun getMessages(channelId:String,complete: (Boolean) -> Unit){
+
+        val url = "$URL_GET_MESSAGES$channelId"
+        Log.v(AuthService.TAG +"getMessages ", url)
+        this.clearMesssages()
+        val getMessagesRequest = object : JsonArrayRequest(Method.GET, url,null,
+            Response.Listener { response ->
+                try {
+                    for( i in 0 until response.length()) {
+                        val message = Message(
+                            response.getJSONObject(i).getString("messageBody"),
+                            response.getJSONObject(i).getString("userName"),
+                            response.getJSONObject(i).getString("channelId"),
+                            response.getJSONObject(i).getString("userAvatar"),
+                            response.getJSONObject(i).getString("userAvatarColor"),
+                            response.getJSONObject(i).getString("_id"),
+                            response.getJSONObject(i).getString("timeStamp")
+                        )
+                        this.messages.add(message)
+                    }
+                    complete(true)
+                } catch (e: JSONException) {
+                    e.printStackTrace()
+                    Log.v(AuthService.TAG +"JSON ", e.message.toString())
+                    complete(false)
+                }
+            },
+            Response.ErrorListener {
+                    error ->
+                error.printStackTrace()
+                onErrorResponse(error)
+                Log.v(AuthService.TAG +" MSG ", error.message.toString())
+                complete(false)
+
+            }
+        ){
+            override fun getBodyContentType(): String {
+
+                return "application/json; charset=utf-8"
+
+            }
+
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers.put("Authorization", "Bearer ${ App.Companion.sharedPreferences.authToken}")
+                return headers
+            }
+        }
+        App.sharedPreferences.requestQueue.add(getMessagesRequest)
+    }
+
+    fun clearMesssages(){
+        this.messages.clear()
+    }
+
+    fun clearChannels(){
+        this.channels.clear()
     }
 
     fun onErrorResponse(error: VolleyError) {

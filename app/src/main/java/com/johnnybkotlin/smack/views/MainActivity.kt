@@ -1,6 +1,5 @@
 package com.johnnybkotlin.smack.views
 
-import android.R.attr.data
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,7 +8,6 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -21,11 +19,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.nkzawa.emitter.Emitter
 import com.github.nkzawa.socketio.client.Ack
 import com.github.nkzawa.socketio.client.IO
 import com.johnnybkotlin.smack.App
 import com.johnnybkotlin.smack.R
+import com.johnnybkotlin.smack.adapters.MessageAdapter
 import com.johnnybkotlin.smack.model.Channel
 import com.johnnybkotlin.smack.model.Message
 import com.johnnybkotlin.smack.services.AuthService
@@ -33,7 +33,6 @@ import com.johnnybkotlin.smack.services.MessageService
 import com.johnnybkotlin.smack.services.UserDataService
 import com.johnnybkotlin.smack.utility.BROADCAST_USERDATA_CHANGED
 import com.johnnybkotlin.smack.utility.SOCKET_URL
-import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
@@ -46,10 +45,17 @@ class MainActivity : AppCompatActivity() {
     val TAG = "MainActiityLOGS"
     var selectedChannel: Channel? = null
     lateinit var channelAdapter:ArrayAdapter<Channel>
+    lateinit var messageAdapter: MessageAdapter
+//messagelistview
 
     private fun setAdapter(){
         channelAdapter = ArrayAdapter(this,android.R.layout.simple_list_item_1,MessageService.channels)
         channel_list.adapter = channelAdapter
+
+        messageAdapter = MessageAdapter(this,MessageService.messages)
+        messagelistview.adapter = messageAdapter
+        val layoutManager = LinearLayoutManager(this)
+        messagelistview.layoutManager = layoutManager
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,7 +124,7 @@ class MainActivity : AppCompatActivity() {
     private val userDataChangedReciever = object : BroadcastReceiver(){
 
         override fun onReceive(context: Context?, intent: Intent?) {
-            //TODO("Not yet implemented")
+
             if(App.sharedPreferences.isLoggedIn){
                 username_navheader.text = UserDataService.name
                 useremail_navheader.text = UserDataService.email
@@ -153,7 +159,24 @@ class MainActivity : AppCompatActivity() {
     fun updateWithChannel(){
 
         mainChannelName.text = "#${selectedChannel?.name}"
-        //TODO: download the messages from the channel
+
+        if(selectedChannel != null){
+            enableSpinner(true)
+            MessageService.getMessages(selectedChannel!!.id){
+                    complete ->
+                if(complete){
+                    enableSpinner(false)
+                    //TODO: display the messages downloaded from the channel
+                    messageAdapter.notifyDataSetChanged()
+                    if(messageAdapter.itemCount>0){
+
+                        messagelistview.smoothScrollToPosition(messageAdapter.itemCount-1)
+                    }
+                }else{
+                    errorToast()
+                }
+            }
+        }
     }
 
     fun loginBtnNavClicked(view: View) {
@@ -166,6 +189,8 @@ class MainActivity : AppCompatActivity() {
             userimage_navheader.setImageResource(R.drawable.profiledefault)
             mainChannelName.text = getString(R.string.please_log_in)
             userimage_navheader.setBackgroundColor(Color.TRANSPARENT)
+            channelAdapter.notifyDataSetChanged()
+            messageAdapter.notifyDataSetChanged()
         }else {
             val loginIntent = Intent(this, LoginActivity::class.java)
             startActivity(loginIntent)
@@ -231,35 +256,51 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val onNewChannel =Emitter.Listener { args ->
+        if (App.sharedPreferences.isLoggedIn) {
+            runOnUiThread {
+                val channelName = args[0] as String
+                val channelDesc = args[1] as String
+                val channelID = args[2] as String
+                Log.v(TAG, " newChannel $channelName $channelDesc")
+                val newChannel = Channel(channelName, channelDesc, channelID)
+                MessageService.channels.add(newChannel)
+                channelAdapter.notifyDataSetChanged()
 
-        runOnUiThread {
-            val channelName = args[0] as String
-            val channelDesc = args[1] as String
-            val channelID = args[2] as String
-            Log.v(TAG," newChannel $channelName $channelDesc")
-            val newChannel = Channel(channelName,channelDesc,channelID)
-            MessageService.channels.add(newChannel)
-            channelAdapter.notifyDataSetChanged()
+            }
         }
     }
-
     private val onNewMessage =Emitter.Listener { args ->
 
-        runOnUiThread {
-            val messageBody = args[0] as String
-            val channelId = args[2] as String
-            val userName = args[3] as String
-            val userAvatar = args[4] as String
-            val userAvatarColor = args[5] as String
-            val id = args[6] as String
-            val timeStamp = args[7] as String
+        if (App.sharedPreferences.isLoggedIn) {
+            runOnUiThread {
+                val messageBody = args[0] as String
+                val channelId = args[2] as String
+                val userName = args[3] as String
+                val userAvatar = args[4] as String
+                val userAvatarColor = args[5] as String
+                val id = args[6] as String
+                val timeStamp = args[7] as String
+                if(channelId == selectedChannel?.id) {
+                    val newMessage = Message(
+                        messageBody,
+                        userName,
+                        channelId,
+                        userAvatar,
+                        userAvatarColor,
+                        id,
+                        timeStamp
+                    )
+                    MessageService.messages.add(newMessage)
+                    //Log.v(TAG, " newMessage ${newMessage.message} ${newMessage.userName} ")
+                    messageAdapter.notifyDataSetChanged()
+                    if(messageAdapter.itemCount>0){
 
-            val newMessage = Message(messageBody,userName,channelId,userAvatar,userAvatarColor,id,timeStamp)
-            MessageService.messages.add(newMessage)
-            Log.v(TAG," newMessage ${newMessage.message} ${newMessage.userName} ")
+                        messagelistview.smoothScrollToPosition(messageAdapter.itemCount-1)
+                    }
+                }
+            }
         }
     }
-
     fun enableSpinner(enable:Boolean){
 
         if(enable){

@@ -21,10 +21,6 @@ import kotlin.text.Charsets.UTF_8
 
 object AuthService {
 
-//    var isLoggedIn = false
-//    var userEmail = ""
-//    var userPassword = ""
-//    var authToken = ""
     val TAG ="API_TAG"
 
     fun registerUser(email: String, password: String, complete: (Boolean) -> Unit){
